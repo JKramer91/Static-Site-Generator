@@ -1,4 +1,5 @@
 from textnode import TextNode, TextType
+from markdown_handler import extract_markdown_images, extract_markdown_links
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     nodes = []
@@ -22,3 +23,55 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 nodes.append(TextNode(text, TextType.TEXT))
 
     return nodes
+
+def split_nodes_image(old_nodes):
+    nodes = []
+    for node in old_nodes:
+        if not node.text:
+            continue
+        
+        links = extract_markdown_images(node.text)
+        if not links:
+            nodes.append(node)
+            continue
+        remaining_text = node.text
+        for text, url in links:
+            sections = remaining_text.split(f"![{text}]({url})", 1)
+            nodes.append(TextNode(sections[0], TextType.TEXT))
+            nodes.append(TextNode(text, TextType.IMAGE, url))
+            remaining_text = sections[1]
+        
+        if remaining_text:
+            nodes.append(TextNode(remaining_text, TextType.TEXT))
+
+    return nodes
+
+def split_nodes_link(old_nodes):
+    nodes = []
+    for node in old_nodes:
+        if not node.text:
+            continue
+        
+        links = extract_markdown_links(node.text)
+        if not links:
+            nodes.append(node)
+            continue
+        remaining_text = node.text
+        for text, url in links:
+            sections = remaining_text.split(f"[{text}]({url})", 1)
+            nodes.append(TextNode(sections[0], TextType.TEXT))
+            nodes.append(TextNode(text, TextType.LINK, url))
+            remaining_text = sections[1]
+        
+        if remaining_text:
+            nodes.append(TextNode(remaining_text, TextType.TEXT))
+
+    return nodes
+
+if __name__ == "__main__":
+    node = TextNode(
+        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+        TextType.TEXT,
+    )
+    new_nodes = split_nodes_image([node])
+    print(new_nodes)
