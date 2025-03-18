@@ -79,27 +79,9 @@ def split_nodes_link(old_nodes):
 
 def text_to_textnodes(text):
     nodes = [TextNode(text, TextType.TEXT)]
-    
-    split_for_bold = partial(split_nodes_delimiter, delimiter="**", text_type=TextType.BOLD)
-    split_for_italic = partial(split_nodes_delimiter, delimiter="_", text_type=TextType.ITALIC)
-    split_for_code = partial(split_nodes_delimiter, delimiter="`", text_type=TextType.CODE)
-    
-    
-    split_functions = [
-        split_nodes_image,
-        split_nodes_link,
-        split_for_code,
-        split_for_bold,
-        split_for_italic,
-    ]
-    
-    for split_function in split_functions:
-        result = []
-        for node in nodes:
-            if node.text_type == TextType.TEXT:
-                result.extend(split_function([node]))
-            else:
-                result.append(node)
-        nodes = result
-    
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
     return nodes
