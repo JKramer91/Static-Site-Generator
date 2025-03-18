@@ -14,8 +14,8 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 if snd_index == -1:
                     raise ValueError("Invalid Markdown: No trailing delimiter!")
                 nodes.append(TextNode(text[:fst_index], TextType.TEXT))
-                nodes.append(TextNode(text[fst_index+1:snd_index], text_type))
-                remaining_text = text[snd_index+1:]
+                nodes.append(TextNode(text[fst_index+len(delimiter):snd_index], text_type))
+                remaining_text = text[snd_index+len(delimiter):]
                 text = remaining_text
             
             if text:
