@@ -1,5 +1,6 @@
+import re
 from textnode import TextNode, TextType
-from markdown_handler import extract_markdown_images, extract_markdown_links
+from functools import partial
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     nodes = []
@@ -23,6 +24,14 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 nodes.append(TextNode(text, TextType.TEXT))
 
     return nodes
+
+def extract_markdown_images(text):
+    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
+
+def extract_markdown_links(text):
+    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
 
 def split_nodes_image(old_nodes):
     nodes = []
@@ -68,10 +77,29 @@ def split_nodes_link(old_nodes):
 
     return nodes
 
-if __name__ == "__main__":
-    node = TextNode(
-        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-        TextType.TEXT,
-    )
-    new_nodes = split_nodes_image([node])
-    print(new_nodes)
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    
+    split_for_bold = partial(split_nodes_delimiter, delimiter="**", text_type=TextType.BOLD)
+    split_for_italic = partial(split_nodes_delimiter, delimiter="_", text_type=TextType.ITALIC)
+    split_for_code = partial(split_nodes_delimiter, delimiter="`", text_type=TextType.CODE)
+    
+    
+    split_functions = [
+        split_nodes_image,
+        split_nodes_link,
+        split_for_code,
+        split_for_bold,
+        split_for_italic,
+    ]
+    
+    for split_function in split_functions:
+        result = []
+        for node in nodes:
+            if node.text_type == TextType.TEXT:
+                result.extend(split_function([node]))
+            else:
+                result.append(node)
+        nodes = result
+    
+    return nodes
