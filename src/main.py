@@ -18,6 +18,6 @@ def main():
         shutil.rmtree(public_path)
     os.mkdir(public_path)
     source_to_destination(static_path, public_path)
-    generate_pages_recursive("./content", "./template.html", "./docs", basepath)
+    generate_pages_recursive(content_path, template_path, public_path, basepath)
 
 main()
