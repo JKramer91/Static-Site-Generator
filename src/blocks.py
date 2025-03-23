@@ -74,11 +74,12 @@ def code_to_html_node(block):
 
 def quote_to_html_node(block):
     lines = block.split("\n")
-    children = []
+    new_lines = []
     for line in lines:
         new_line = (line[1:].strip())
-        child = text_to_children(new_line)
-        children.append(ParentNode("p", child))
+        new_lines.append(new_line)
+    child = " ".join(new_lines)
+    children = text_to_children(child)
     return ParentNode("blockquote", children)
 
 def ulist_to_html_node(block):
